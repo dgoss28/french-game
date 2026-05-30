@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1d3557" />
+  <meta name="description" content="Practice the French present tense of être and avoir by filling in the blanks. ~120 examples with explanations." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Être &amp; Avoir" />
+  <title>Être &amp; Avoir — French Practice</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+  <link rel="manifest" href="site.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Être &amp; Avoir</h1>
+    <p class="subtitle">Fill in the blank · present tense</p>
+  </header>
+
+  <div class="stats-bar" id="statsBar">
+    <div class="stat">
+      <span class="stat-num" id="scoreNum">0</span>
+      <span class="stat-label">correct</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="accuracyNum">—</span>
+      <span class="stat-label">accuracy</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="streakNum">0</span>
+      <span class="stat-label">streak 🔥</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" id="progressNum">0/0</span>
+      <span class="stat-label">done</span>
+    </div>
+  </div>
+
+  <div class="filters" id="filters">
+    <button class="filter-btn is-active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="être">Être</button>
+    <button class="filter-btn" data-filter="avoir">Avoir</button>
+  </div>
+
+  <main class="card" id="card">
+    <!-- Question screen -->
+    <section id="quizView">
+      <div class="card-top">
+        <span class="verb-chip" id="verbChip">être</span>
+        <span class="mode-chip" id="modeChip">choose</span>
+      </div>
+
+      <p class="prompt" id="promptText">Loading…</p>
+      <button class="translation-toggle" id="translationToggle" type="button">Show translation 👁</button>
+      <p class="translation" id="translationText" hidden></p>
+
+      <div class="answer-area" id="answerArea"><!-- choices or text input injected here --></div>
+
+      <div class="feedback" id="feedback" hidden>
+        <p class="feedback-headline" id="feedbackHeadline"></p>
+        <p class="explanation" id="explanationText"></p>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="skipBtn">Skip</button>
+        <button class="btn btn-primary" id="nextBtn" hidden>Next →</button>
+      </div>
+    </section>
+
+    <!-- End-of-deck summary -->
+    <section id="summaryView" hidden>
+      <h2 class="summary-title">Deck complete! 🎉</h2>
+      <p class="summary-line" id="summaryScore"></p>
+      <p class="summary-line muted" id="summaryHint"></p>
+      <button class="btn btn-primary" id="playAgainBtn">Play again</button>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <button class="link-btn" id="resetBtn">Reset progress</button>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "Être & Avoir — French Practice",
+  "short_name": "Être & Avoir",
+  "description": "Practice the French present tense of être and avoir by filling in the blanks.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1d3557",
+  "theme_color": "#1d3557",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
