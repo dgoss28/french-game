@@ -76,11 +76,42 @@
   }
 
   // ---------------------------------------------------------------- speech (TTS)
+  // Natural-sounding French voices to prefer (by substring, case-insensitive).
+  const PREFERRED_FR_VOICES = [
+    "google français", "google francais",       // Android Chrome
+    "thomas", "amélie", "amelie", "audrey",      // Apple enhanced
+    "aurélie", "aurelie", "marie", "virginie",
+    "microsoft"                                  // Windows
+  ];
+  // Apple's joke/novelty voices that sound robotic or silly — avoid these.
+  const NOVELTY_VOICES = [
+    "eddy", "flo", "grandma", "grandpa", "reed", "rocko", "sandy", "shelley",
+    "bad news", "good news", "bubbles", "bells", "boing", "jester", "organ",
+    "superstar", "trinoids", "whisper", "wobble", "zarvox", "cellos", "bahh"
+  ];
+
   function frenchVoice() {
     const voices = window.speechSynthesis.getVoices() || [];
-    // Prefer an explicit fr-FR voice, then any French voice.
-    return voices.find(function (v) { return /^fr[-_]fr$/i.test(v.lang); }) ||
-           voices.find(function (v) { return /^fr([-_]|$)/i.test(v.lang); }) || null;
+    const fr = voices.filter(function (v) { return /^fr([-_]|$)/i.test(v.lang); });
+    if (!fr.length) return null;
+    // Prefer France French over other regions (Canada, etc.).
+    const frFR = fr.filter(function (v) { return /^fr[-_]fr/i.test(v.lang); });
+    const pool = frFR.length ? frFR : fr;
+    const name = function (v) { return v.name.toLowerCase(); };
+
+    // 1. A known good voice by name.
+    for (var i = 0; i < PREFERRED_FR_VOICES.length; i++) {
+      var want = PREFERRED_FR_VOICES[i];
+      var hit = pool.find(function (v) { return name(v).indexOf(want) !== -1; });
+      if (hit) return hit;
+    }
+    // 2. Any voice that isn't a known novelty voice.
+    var normal = pool.find(function (v) {
+      return !NOVELTY_VOICES.some(function (n) { return name(v).indexOf(n) !== -1; });
+    });
+    if (normal) return normal;
+    // 3. Fall back to the default / first available.
+    return pool.find(function (v) { return v.default; }) || pool[0];
   }
 
   // Reads the full sentence (with the conjugated verb) so the learner can hear it,
@@ -94,7 +125,8 @@
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "fr-FR";
-    u.rate = 0.9;
+    u.rate = 0.85;
+    u.pitch = 1;
     const v = frenchVoice();
     if (v) u.voice = v;
     u.onstart = function () { el.listenBtn.classList.add("speaking"); };
