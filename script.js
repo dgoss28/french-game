@@ -12,6 +12,8 @@
 
   const STORAGE_KEY = "etreavoir.progress.v1";
 
+  const HAS_SPEECH = typeof window !== "undefined" && "speechSynthesis" in window;
+
   // ---- DOM refs ----
   const el = {
     scoreNum: byId("scoreNum"),
@@ -24,6 +26,7 @@
     verbChip: byId("verbChip"),
     modeChip: byId("modeChip"),
     promptText: byId("promptText"),
+    listenBtn: byId("listenBtn"),
     translationToggle: byId("translationToggle"),
     translationText: byId("translationText"),
     answerArea: byId("answerArea"),
@@ -72,6 +75,40 @@
       .replace(/[''`]/g, "'");
   }
 
+  // ---------------------------------------------------------------- speech (TTS)
+  function frenchVoice() {
+    const voices = window.speechSynthesis.getVoices() || [];
+    // Prefer an explicit fr-FR voice, then any French voice.
+    return voices.find(function (v) { return /^fr[-_]fr$/i.test(v.lang); }) ||
+           voices.find(function (v) { return /^fr([-_]|$)/i.test(v.lang); }) || null;
+  }
+
+  // Reads the full sentence (with the conjugated verb) so the learner can hear it,
+  // then pick the matching answer.
+  function speakFrench() {
+    if (!HAS_SPEECH) return;
+    const item = state.deck[state.index];
+    if (!item) return;
+    const text = item.prompt.replace(/_{2,}/, item.answer);
+
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "fr-FR";
+    u.rate = 0.9;
+    const v = frenchVoice();
+    if (v) u.voice = v;
+    u.onstart = function () { el.listenBtn.classList.add("speaking"); };
+    u.onend = function () { el.listenBtn.classList.remove("speaking"); };
+    u.onerror = function () { el.listenBtn.classList.remove("speaking"); };
+    window.speechSynthesis.speak(u);
+  }
+
+  function stopSpeech() {
+    if (!HAS_SPEECH) return;
+    window.speechSynthesis.cancel();
+    el.listenBtn.classList.remove("speaking");
+  }
+
   function buildDeck() {
     let pool = EXAMPLES;
     if (state.filter !== "all") {
@@ -117,6 +154,7 @@
 
   // ---------------------------------------------------------------- question render
   function renderQuestion() {
+    stopSpeech();
     const item = state.deck[state.index];
     state.answered = false;
 
@@ -341,6 +379,8 @@
     startRun();
   });
 
+  el.listenBtn.addEventListener("click", speakFrench);
+
   el.translationToggle.addEventListener("click", function () {
     const show = el.translationText.hidden;
     el.translationText.hidden = !show;
@@ -365,6 +405,16 @@
   });
 
   // ---------------------------------------------------------------- init
+  if (!HAS_SPEECH) {
+    el.listenBtn.hidden = true;
+  } else if (typeof window.speechSynthesis.getVoices === "function") {
+    // Warm up the voice list (loads asynchronously in some browsers).
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = function () {
+      window.speechSynthesis.getVoices();
+    };
+  }
+
   loadProgress();
   // Reflect persisted filter in the UI.
   Array.prototype.forEach.call(el.filters.children, function (b) {
