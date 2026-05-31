@@ -14,6 +14,31 @@
 
   const HAS_SPEECH = typeof window !== "undefined" && "speechSynthesis" in window;
 
+  const GLOSS = typeof GLOSSARY !== "undefined" ? GLOSSARY : {};
+
+  // Circled-number badges for numbering multiple blanks.
+  const BADGES = ["①", "②", "③", "④"];
+
+  // ---- per-item helpers (support both single- and multi-blank shapes) ----
+  function blanksOf(item) {
+    return item.blanks || [{ verb: item.verb, answer: item.answer }];
+  }
+  function isMulti(item) {
+    return !!(item.blanks && item.blanks.length > 1);
+  }
+  function verbsOf(item) {
+    const s = new Set();
+    blanksOf(item).forEach(function (b) { s.add(b.verb); });
+    return s;
+  }
+  function chipLabel(item) {
+    const blanks = blanksOf(item);
+    if (blanks.length === 1) return blanks[0].verb;
+    const verbs = verbsOf(item);
+    if (verbs.size === 1) return blanks[0].verb + " ×" + blanks.length;
+    return "être + avoir";
+  }
+
   // ---- DOM refs ----
   const el = {
     scoreNum: byId("scoreNum"),
@@ -26,6 +51,7 @@
     verbChip: byId("verbChip"),
     modeChip: byId("modeChip"),
     promptText: byId("promptText"),
+    wordPopover: byId("wordPopover"),
     listenBtn: byId("listenBtn"),
     translationToggle: byId("translationToggle"),
     translationText: byId("translationText"),
@@ -75,6 +101,17 @@
       .replace(/[''`]/g, "'");
   }
 
+  // Glossary lookup key for a displayed word (also strips edge apostrophes).
+  function wordKey(token) {
+    return normalize(token).replace(/^'+|'+$/g, "");
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
   // ---------------------------------------------------------------- speech (TTS)
   // Natural-sounding French voices to prefer (by substring, case-insensitive).
   const PREFERRED_FR_VOICES = [
@@ -114,13 +151,17 @@
     return pool.find(function (v) { return v.default; }) || pool[0];
   }
 
-  // Reads the full sentence (with the conjugated verb) so the learner can hear it,
+  // Reads the full sentence (with every blank filled in) so the learner can hear it,
   // then pick the matching answer.
   function speakFrench() {
     if (!HAS_SPEECH) return;
     const item = state.deck[state.index];
     if (!item) return;
-    const text = item.prompt.replace(/_{2,}/, item.answer);
+    const blanks = blanksOf(item);
+    let bi = 0;
+    const text = item.prompt.replace(/_{2,}/g, function () {
+      return blanks[bi++].answer;
+    });
 
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
@@ -144,7 +185,7 @@
   function buildDeck() {
     let pool = EXAMPLES;
     if (state.filter !== "all") {
-      pool = EXAMPLES.filter(function (e) { return e.verb === state.filter; });
+      pool = EXAMPLES.filter(function (e) { return verbsOf(e).has(state.filter); });
     }
     state.deck = shuffle(pool);
     state.index = 0;
@@ -187,20 +228,21 @@
   // ---------------------------------------------------------------- question render
   function renderQuestion() {
     stopSpeech();
+    hideWordPopover();
     const item = state.deck[state.index];
     state.answered = false;
 
     // Alternate input mode: even index → multiple choice, odd → typed.
     const mode = (state.index % 2 === 0) ? "choice" : "type";
 
-    el.verbChip.textContent = item.verb;
+    el.verbChip.textContent = chipLabel(item);
     el.modeChip.textContent = mode === "choice" ? "tap" : "type";
-    el.promptText.innerHTML = renderPrompt(item.prompt);
+    el.promptText.innerHTML = renderPrompt(item);
     // Translation starts hidden behind a toggle so it doesn't give the meaning away.
     el.translationText.textContent = item.translation;
     el.translationText.hidden = true;
     el.translationToggle.hidden = false;
-    el.translationToggle.textContent = "Show translation 👁";
+    el.translationToggle.textContent = "Show full translation 👁";
 
     el.feedback.hidden = true;
     el.feedback.className = "feedback";
@@ -208,7 +250,9 @@
     el.skipBtn.hidden = false;
     el.answerArea.innerHTML = "";
 
-    if (mode === "choice") {
+    if (isMulti(item)) {
+      renderMultiBlanks(item, mode);
+    } else if (mode === "choice") {
       renderChoices(item);
     } else {
       renderTypeInput(item);
@@ -217,12 +261,37 @@
     renderStats();
   }
 
-  // Replace the ___ blank with a styled placeholder.
-  function renderPrompt(prompt) {
-    const safe = prompt.replace(/[&<>]/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c];
-    });
-    return safe.replace(/_{2,}/, '<span class="blank">?</span>');
+  // Render the prompt: number each blank (when there are several) and wrap glossable
+  // words in tappable spans. A single tokenizer pass handles both.
+  function renderPrompt(item) {
+    const blanks = blanksOf(item);
+    const multi = blanks.length > 1;
+    const tokenRe = /(_{2,})|([A-Za-zÀ-ÿœŒæÆ'']+)|([^_A-Za-zÀ-ÿœŒæÆ'']+)/g;
+    let blankIdx = 0;
+    let out = "";
+    let m;
+    while ((m = tokenRe.exec(item.prompt)) !== null) {
+      if (m[1] !== undefined) {
+        // a blank
+        const label = multi ? (BADGES[blankIdx] || "•") : "?";
+        out += '<span class="blank">' + label + "</span>";
+        blankIdx++;
+      } else if (m[2] !== undefined) {
+        // a word — make it tappable if it's in the glossary
+        const word = m[2];
+        const gloss = GLOSS[wordKey(word)];
+        if (gloss) {
+          out += '<span class="word" data-gloss="' + escapeHtml(gloss) + '">' +
+                 escapeHtml(word) + "</span>";
+        } else {
+          out += escapeHtml(word);
+        }
+      } else {
+        // spaces / punctuation
+        out += escapeHtml(m[3]);
+      }
+    }
+    return out;
   }
 
   function renderChoices(item) {
@@ -305,6 +374,194 @@
     wrap.appendChild(accents);
     el.answerArea.appendChild(wrap);
     input.focus();
+  }
+
+  // ---------------------------------------------------------------- multi-blank
+  // Two (or more) blanks in one sentence — each gets its own choices/input and is
+  // checked together via a single Check button. Stats are credited per blank.
+  function renderMultiBlanks(item, mode) {
+    const blanks = blanksOf(item);
+    const controls = [];
+    let lastInput = null;
+
+    blanks.forEach(function (blank, idx) {
+      const group = document.createElement("div");
+      group.className = "blank-group";
+
+      const label = document.createElement("span");
+      label.className = "blank-label";
+      label.textContent = BADGES[idx] || "•";
+      group.appendChild(label);
+
+      if (mode === "choice") {
+        const grid = document.createElement("div");
+        grid.className = "choices";
+        const correct = blank.answer;
+        const others = shuffle(FORMS[blank.verb].filter(function (f) {
+          return normalize(f) !== normalize(correct);
+        })).slice(0, 3);
+        shuffle([correct].concat(others)).forEach(function (choice) {
+          const btn = document.createElement("button");
+          btn.className = "choice";
+          btn.textContent = choice;
+          btn.addEventListener("click", function () {
+            if (state.answered) return;
+            Array.prototype.forEach.call(grid.children, function (b) {
+              b.classList.remove("selected");
+            });
+            btn.classList.add("selected");
+          });
+          grid.appendChild(btn);
+        });
+        group.appendChild(grid);
+
+        controls.push({
+          getValue: function () {
+            const sel = grid.querySelector(".choice.selected");
+            return sel ? sel.textContent : "";
+          },
+          mark: function (correctRight) {
+            Array.prototype.forEach.call(grid.children, function (b) {
+              b.disabled = true;
+              if (normalize(b.textContent) === normalize(blank.answer)) {
+                b.classList.add("correct");
+              } else if (b.classList.contains("selected") && !correctRight) {
+                b.classList.add("wrong");
+              }
+            });
+          }
+        });
+      } else {
+        const row = document.createElement("div");
+        row.className = "type-row";
+        const input = document.createElement("input");
+        input.className = "text-input";
+        input.type = "text";
+        input.name = "answer" + idx;
+        input.autocomplete = "off";
+        input.autocapitalize = "off";
+        input.spellcheck = false;
+        input.setAttribute("inputmode", "text");
+        input.placeholder = "blank " + (idx + 1) + "…";
+        input.addEventListener("focus", function () { lastInput = input; });
+        row.appendChild(input);
+        group.appendChild(row);
+        if (!lastInput) lastInput = input;
+
+        controls.push({
+          getValue: function () { return input.value; },
+          mark: function (correctRight) {
+            input.disabled = true;
+            input.classList.add(correctRight ? "correct" : "wrong");
+          }
+        });
+      }
+
+      el.answerArea.appendChild(group);
+    });
+
+    // One shared accent helper for typed multi-blank questions.
+    if (mode === "type") {
+      const accents = document.createElement("div");
+      accents.className = "accent-row";
+      ["é", "è", "ê", "ë", "à", "â", "ä", "î", "ï", "ô", "ö", "ù", "û", "ü", "ç", "œ"].forEach(function (ch) {
+        const ab = document.createElement("button");
+        ab.className = "accent-btn";
+        ab.textContent = ch;
+        ab.addEventListener("click", function () {
+          if (lastInput) { lastInput.value += ch; lastInput.focus(); }
+        });
+        accents.appendChild(ab);
+      });
+      el.answerArea.appendChild(accents);
+    }
+
+    const check = document.createElement("button");
+    check.className = "submit-btn check-multi";
+    check.textContent = "Check answers";
+    check.addEventListener("click", function () {
+      if (state.answered) return;
+      // Require every blank to have a value first.
+      for (var i = 0; i < controls.length; i++) {
+        if (!normalize(controls[i].getValue())) {
+          if (mode === "type" && lastInput) lastInput.focus();
+          return;
+        }
+      }
+      handleMultiAnswer(item, controls, check);
+    });
+    el.answerArea.appendChild(check);
+  }
+
+  function handleMultiAnswer(item, controls, check) {
+    state.answered = true;
+    const blanks = blanksOf(item);
+    let allRight = true;
+
+    controls.forEach(function (control, i) {
+      const right = normalize(control.getValue()) === normalize(blanks[i].answer);
+      state.attempts += 1;
+      if (right) {
+        state.score += 1;
+        state.streak += 1;
+        if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+      } else {
+        state.streak = 0;
+        allRight = false;
+      }
+      control.mark(right);
+    });
+
+    if (check) check.disabled = true;
+
+    el.feedback.hidden = false;
+    el.feedback.className = "feedback " + (allRight ? "good" : "bad");
+    const answers = blanks.map(function (b, i) {
+      return (BADGES[i] || "•") + " " + b.answer;
+    }).join("  ·  ");
+    el.feedbackHeadline.textContent = (allRight ? "Correct! ✓  " : "Not quite —  ") + answers;
+    el.explanationText.textContent = item.explanation;
+
+    el.skipBtn.hidden = true;
+    el.nextBtn.hidden = false;
+    el.nextBtn.focus();
+    renderStats();
+    saveProgress();
+  }
+
+  // ---------------------------------------------------------------- word hint popover
+  function showWordPopover(wordEl) {
+    const gloss = wordEl.getAttribute("data-gloss");
+    if (!gloss) return;
+    const pop = el.wordPopover;
+    pop.textContent = gloss;
+    pop.hidden = false;
+    pop.classList.remove("below");
+
+    // Position relative to the .card (its offsetParent).
+    const card = pop.offsetParent || pop.parentElement;
+    const cardRect = card.getBoundingClientRect();
+    const wr = wordEl.getBoundingClientRect();
+    const popW = pop.offsetWidth;
+    const popH = pop.offsetHeight;
+
+    let left = (wr.left - cardRect.left) + wr.width / 2 - popW / 2;
+    const maxLeft = card.clientWidth - popW - 6;
+    if (left < 6) left = 6;
+    if (left > maxLeft) left = maxLeft;
+
+    let top = (wr.top - cardRect.top) - popH - 8;
+    if (top < 2) {
+      // No room above — flip below the word.
+      top = (wr.bottom - cardRect.top) + 8;
+      pop.classList.add("below");
+    }
+    pop.style.left = left + "px";
+    pop.style.top = top + "px";
+  }
+
+  function hideWordPopover() {
+    if (el.wordPopover) el.wordPopover.hidden = true;
   }
 
   // ---------------------------------------------------------------- answering
@@ -413,10 +670,33 @@
 
   el.listenBtn.addEventListener("click", speakFrench);
 
+  // Tap a word in the sentence → show its meaning in a popover bubble.
+  let activeWord = null;
+  el.promptText.addEventListener("click", function (e) {
+    const wordEl = e.target.closest(".word");
+    if (!wordEl) return;
+    e.stopPropagation();
+    if (activeWord === wordEl && !el.wordPopover.hidden) {
+      activeWord = null;
+      hideWordPopover();
+    } else {
+      activeWord = wordEl;
+      showWordPopover(wordEl);
+    }
+  });
+  // Tap anywhere else (or scroll) dismisses the popover.
+  document.addEventListener("click", function (e) {
+    if (el.wordPopover.hidden) return;
+    if (e.target.closest(".word")) return;
+    activeWord = null;
+    hideWordPopover();
+  });
+  window.addEventListener("scroll", function () { activeWord = null; hideWordPopover(); }, true);
+
   el.translationToggle.addEventListener("click", function () {
     const show = el.translationText.hidden;
     el.translationText.hidden = !show;
-    el.translationToggle.textContent = show ? "Hide translation" : "Show translation 👁";
+    el.translationToggle.textContent = show ? "Hide full translation" : "Show full translation 👁";
   });
 
   el.nextBtn.addEventListener("click", nextQuestion);

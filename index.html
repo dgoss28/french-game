@@ -56,7 +56,7 @@
       <p class="prompt" id="promptText">Loading…</p>
       <div class="aux-controls">
         <button class="aux-btn" id="listenBtn" type="button" title="Hear the full sentence in French">🔊 Listen</button>
-        <button class="aux-btn" id="translationToggle" type="button">Show translation 👁</button>
+        <button class="aux-btn" id="translationToggle" type="button">Show full translation 👁</button>
       </div>
       <p class="translation" id="translationText" hidden></p>
 
@@ -80,6 +80,8 @@
       <p class="summary-line muted" id="summaryHint"></p>
       <button class="btn btn-primary" id="playAgainBtn">Play again</button>
     </section>
+
+    <div id="wordPopover" class="word-popover" hidden></div>
   </main>
 
   <footer class="app-footer">
@@ -87,6 +89,7 @@
   </footer>
 
   <script src="data.js"></script>
+  <script src="glossary.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
