@@ -281,5 +281,41 @@ const EXAMPLES = [
   { verb: "être", subject: "Je", answer: "suis", prompt: "Je ___ né en hiver.", translation: "I was born in winter.",
     explanation: "“Naître” (to be born) uses être in the passé composé: je suis né. “Je” → suis." },
   { verb: "avoir", subject: "Je (j')", answer: "ai", prompt: "J'___ mangé une pomme.", translation: "I ate an apple.",
-    explanation: "Most verbs (like manger) form the passé composé with avoir: j'ai mangé. J' → ai." }
+    explanation: "Most verbs (like manger) form the passé composé with avoir: j'ai mangé. J' → ai." },
+
+  // ---------- NEGATIVES: ne … pas (n' before a vowel) ----------
+  // The verb form is unchanged — it's just wrapped in ne … pas.
+  { verb: "être", subject: "Je", answer: "suis", prompt: "Je ne ___ pas fatigué.", translation: "I am not tired.",
+    explanation: "Negation wraps the verb: ne + verb + pas. The form is still “je suis” → Je ne suis pas. (ne stays full before the consonant of “suis”.)" },
+  { verb: "être", subject: "Tu", answer: "es", prompt: "Tu n'___ pas en retard.", translation: "You are not late.",
+    explanation: "ne becomes n' before a vowel, and “es” starts with a vowel → Tu n'es pas. The verb form is unchanged." },
+  { verb: "être", subject: "Il", answer: "est", prompt: "Il n'___ pas content.", translation: "He is not happy.",
+    explanation: "n' + est + pas → Il n'est pas. ne elides to n' before the vowel of “est”." },
+  { verb: "être", subject: "Ce", answer: "est", prompt: "Ce n'___ pas vrai.", translation: "It's not true.",
+    explanation: "“Ce n'est pas” is the negative of “c'est”. ne → n' before “est”." },
+  { verb: "être", subject: "Nous", answer: "sommes", prompt: "Nous ne ___ pas prêts.", translation: "We are not ready.",
+    explanation: "ne + sommes + pas → Nous ne sommes pas. ne stays full before the consonant of “sommes”." },
+  { verb: "être", subject: "Vous", answer: "êtes", prompt: "Vous n'___ pas sûrs.", translation: "You are not sure.",
+    explanation: "“êtes” starts with a vowel, so ne → n' → Vous n'êtes pas." },
+  { verb: "être", subject: "Ils", answer: "sont", prompt: "Ils ne ___ pas américains.", translation: "They are not American.",
+    explanation: "ne + sont + pas → Ils ne sont pas. The form “sont” doesn't change in the negative." },
+  { verb: "être", subject: "Elle", answer: "est", prompt: "Elle n'___ pas là.", translation: "She is not here.",
+    explanation: "n' + est + pas → Elle n'est pas là." },
+
+  { verb: "avoir", subject: "Je (j')", answer: "ai", prompt: "Je n'___ pas faim.", translation: "I am not hungry.",
+    explanation: "All present-tense avoir forms start with a vowel, so ne → n': Je n'ai pas faim." },
+  { verb: "avoir", subject: "Tu", answer: "as", prompt: "Tu n'___ pas raison.", translation: "You are not right.",
+    explanation: "n' + as + pas → Tu n'as pas raison. The verb form stays “as”." },
+  { verb: "avoir", subject: "Il", answer: "a", prompt: "Il n'___ pas de voiture.", translation: "He doesn't have a car.",
+    explanation: "Il n'a pas… Note: after a negative, un/une/des become “de” — “une voiture” → “pas de voiture”." },
+  { verb: "avoir", subject: "On", answer: "a", prompt: "On n'___ pas peur.", translation: "We're not afraid.",
+    explanation: "“On” conjugates like il/elle → a, and ne → n' before it: On n'a pas peur." },
+  { verb: "avoir", subject: "Nous", answer: "avons", prompt: "Nous n'___ pas le temps.", translation: "We don't have time.",
+    explanation: "n' + avons + pas → Nous n'avons pas le temps." },
+  { verb: "avoir", subject: "Vous", answer: "avez", prompt: "Vous n'___ pas tort.", translation: "You are not wrong.",
+    explanation: "n' + avez + pas → Vous n'avez pas tort." },
+  { verb: "avoir", subject: "Ils", answer: "ont", prompt: "Ils n'___ pas d'enfants.", translation: "They don't have children.",
+    explanation: "Ils n'ont pas… After a negative, “des” becomes “de” (→ d' before a vowel): “des enfants” → “pas d'enfants”." },
+  { verb: "avoir", subject: "Je (j')", answer: "ai", prompt: "Je n'___ pas de chien.", translation: "I don't have a dog.",
+    explanation: "Je n'ai pas… and “un chien” → “pas de chien” (un/une/des → de in the negative)." }
 ];
