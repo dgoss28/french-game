@@ -4,11 +4,42 @@
 (function () {
   "use strict";
 
-  // Present-tense conjugation pools — used to build plausible multiple-choice distractors.
+  // Present-tense conjugation pools for the irregular verbs — used to build
+  // plausible multiple-choice distractors. Regular -er verbs are conjugated on
+  // the fly (see formsOf), so they don't need to be listed here.
   const FORMS = {
     "être": ["suis", "es", "est", "sommes", "êtes", "sont"],
     "avoir": ["ai", "as", "a", "avons", "avez", "ont"]
   };
+
+  // Endings for a regular -er verb, in the same order as the FORMS arrays
+  // (je, tu, il, nous, vous, ils). je/tu/il/ils all sound identical.
+  const ER_ENDINGS = ["e", "es", "e", "ons", "ez", "ent"];
+
+  // A regular -er verb is anything ending in "er" that isn't an irregular we've
+  // listed explicitly. (être/avoir don't end in "er", but guard anyway.)
+  function isErVerb(verb) {
+    return verb !== "être" && verb !== "avoir" && /er$/.test(verb);
+  }
+
+  // The distinct present-tense forms of a verb, for building distractors.
+  // Irregular verbs come from FORMS; regular -er verbs are built from the stem.
+  // De-duplicated because the je/il forms of an -er verb are identical (parle).
+  function formsOf(verb) {
+    let forms = FORMS[verb];
+    if (!forms && isErVerb(verb)) {
+      const stem = verb.slice(0, -2);
+      forms = ER_ENDINGS.map(function (e) { return stem + e; });
+    }
+    if (!forms) return [];
+    const seen = {};
+    return forms.filter(function (f) {
+      const k = normalize(f);
+      if (seen[k]) return false;
+      seen[k] = true;
+      return true;
+    });
+  }
 
   const STORAGE_KEY = "etreavoir.progress.v1";
 
@@ -182,11 +213,21 @@
     el.listenBtn.classList.remove("speaking");
   }
 
-  function buildDeck() {
-    let pool = EXAMPLES;
-    if (state.filter !== "all") {
-      pool = EXAMPLES.filter(function (e) { return verbsOf(e).has(state.filter); });
+  // Does an item belong in the deck for the active filter?
+  // "all" → everything; "-er" → any blank that's a regular -er verb;
+  // otherwise an exact verb match (être / avoir).
+  function itemMatchesFilter(item, filter) {
+    if (filter === "all") return true;
+    if (filter === "-er") {
+      return Array.from(verbsOf(item)).some(isErVerb);
     }
+    return verbsOf(item).has(filter);
+  }
+
+  function buildDeck() {
+    const pool = EXAMPLES.filter(function (e) {
+      return itemMatchesFilter(e, state.filter);
+    });
     state.deck = shuffle(pool);
     state.index = 0;
   }
@@ -297,7 +338,7 @@
   function renderChoices(item) {
     const correct = item.answer;
     // Distractors: other forms of the SAME verb (always plausible conjugations).
-    const others = shuffle(FORMS[item.verb].filter(function (f) {
+    const others = shuffle(formsOf(item.verb).filter(function (f) {
       return normalize(f) !== normalize(correct);
     })).slice(0, 3);
     const choices = shuffle([correct].concat(others));
@@ -397,7 +438,7 @@
         const grid = document.createElement("div");
         grid.className = "choices";
         const correct = blank.answer;
-        const others = shuffle(FORMS[blank.verb].filter(function (f) {
+        const others = shuffle(formsOf(blank.verb).filter(function (f) {
           return normalize(f) !== normalize(correct);
         })).slice(0, 3);
         shuffle([correct].concat(others)).forEach(function (choice) {

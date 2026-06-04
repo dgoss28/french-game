@@ -386,5 +386,109 @@ const EXAMPLES = [
     explanation: "Profession and quality both use être → elle est both times." },
   { prompt: "Nous ___ français mais nous ne ___ pas de Paris.", translation: "We are French but we're not from Paris.",
     blanks: [ { verb: "être", answer: "sommes" }, { verb: "être", answer: "sommes" } ],
-    explanation: "Nationality and origin both use être → nous sommes / nous ne sommes pas." }
+    explanation: "Nationality and origin both use être → nous sommes / nous ne sommes pas." },
+
+  // ====================================================================
+  // REGULAR -ER VERBS (1st conjugation)
+  // Drop -er → stem, then add: je -e · tu -es · il/elle/on -e ·
+  //   nous -ons · vous -ez · ils/elles -ent.
+  // Trap: the je, tu, il and ils forms (parle, parles, parle, parlent)
+  //   all sound IDENTICAL — the endings -e/-es/-ent are silent.
+  // ====================================================================
+
+  // ---------- PARLER : to speak ----------
+  { verb: "parler", subject: "Je", answer: "parle", prompt: "Je ___ français.", translation: "I speak French.",
+    explanation: "Regular -er verb: parler → drop -er → stem “parl-”, add the je ending -e → je parle. The -e is silent." },
+  { verb: "parler", subject: "Tu", answer: "parles", prompt: "Tu ___ trop vite.", translation: "You speak too fast.",
+    explanation: "Stem “parl-” + the tu ending -es → tu parles. It sounds exactly like “je parle” — the -es is silent." },
+  { verb: "parler", subject: "Nous", answer: "parlons", prompt: "Nous ___ de toi.", translation: "We're talking about you.",
+    explanation: "The nous ending of every -er verb is -ons → nous parlons. This one you can hear (“-ons”)." },
+  { verb: "parler", subject: "Vous", answer: "parlez", prompt: "Vous ___ anglais ?", translation: "Do you speak English?",
+    explanation: "The vous ending of every -er verb is -ez → vous parlez. Audible too (“-ez”)." },
+  { verb: "parler", subject: "Je", answer: "parle", prompt: "Je ne ___ pas espagnol.", translation: "I don't speak Spanish.",
+    explanation: "Negation wraps the verb (ne … pas) but doesn't change its form: je parle → je ne parle pas." },
+
+  // ---------- AIMER : to like / to love ----------
+  { verb: "aimer", subject: "Je (j')", answer: "aime", prompt: "J'___ le chocolat.", translation: "I like chocolate.",
+    explanation: "Stem “aim-” + je ending -e → j'aime. Je becomes j' before the vowel of “aime”." },
+  { verb: "aimer", subject: "Tu", answer: "aimes", prompt: "Tu ___ la musique.", translation: "You like music.",
+    explanation: "Stem “aim-” + tu ending -es → tu aimes. Sounds the same as j'aime." },
+  { verb: "aimer", subject: "Elle", answer: "aime", prompt: "Elle ___ danser.", translation: "She likes to dance.",
+    explanation: "il/elle/on ending is -e → elle aime. A second verb after aimer stays in the infinitive (danser)." },
+  { verb: "aimer", subject: "Nous", answer: "aimons", prompt: "Nous ___ voyager.", translation: "We like to travel.",
+    explanation: "nous ending -ons → nous aimons. Followed by the infinitive “voyager”." },
+  { verb: "aimer", subject: "Ils", answer: "aiment", prompt: "Ils ___ le football.", translation: "They like soccer.",
+    explanation: "ils/elles ending is -ent → ils aiment. The -ent is completely silent: “aiment” sounds like “aime”." },
+
+  // ---------- HABITER : to live (somewhere) ----------
+  { verb: "habiter", subject: "Je (j')", answer: "habite", prompt: "J'___ à Paris.", translation: "I live in Paris.",
+    explanation: "Stem “habit-” + -e → j'habite. The h is silent, so je elides to j'." },
+  { verb: "habiter", subject: "Tu", answer: "habites", prompt: "Tu ___ où ?", translation: "Where do you live?",
+    explanation: "Stem “habit-” + tu ending -es → tu habites." },
+  { verb: "habiter", subject: "Il", answer: "habite", prompt: "Il ___ avec ses parents.", translation: "He lives with his parents.",
+    explanation: "il ending -e → il habite. (No liaison needed in writing — just the silent -e.)" },
+  { verb: "habiter", subject: "Nous", answer: "habitons", prompt: "Nous ___ en France.", translation: "We live in France.",
+    explanation: "nous ending -ons → nous habitons." },
+  { verb: "habiter", subject: "Elles", answer: "habitent", prompt: "Elles ___ ensemble.", translation: "They live together.",
+    explanation: "elles ending -ent → elles habitent. The -ent is silent." },
+
+  // ---------- TRAVAILLER : to work ----------
+  { verb: "travailler", subject: "Je", answer: "travaille", prompt: "Je ___ beaucoup.", translation: "I work a lot.",
+    explanation: "Stem “travaill-” + -e → je travaille." },
+  { verb: "travailler", subject: "Tu", answer: "travailles", prompt: "Tu ___ aujourd'hui ?", translation: "Are you working today?",
+    explanation: "Stem “travaill-” + tu ending -es → tu travailles." },
+  { verb: "travailler", subject: "On", answer: "travaille", prompt: "On ___ ensemble.", translation: "We work together.",
+    explanation: "“On” conjugates like il/elle → ending -e → on travaille, even though it means “we”." },
+  { verb: "travailler", subject: "Vous", answer: "travaillez", prompt: "Vous ___ ici ?", translation: "Do you work here?",
+    explanation: "vous ending -ez → vous travaillez." },
+  { verb: "travailler", subject: "Ils", answer: "travaillent", prompt: "Ils ne ___ pas le dimanche.", translation: "They don't work on Sundays.",
+    explanation: "ils ending -ent → ils travaillent; the negative ne … pas wraps it without changing the form." },
+
+  // ---------- REGARDER : to watch / to look at ----------
+  { verb: "regarder", subject: "Je", answer: "regarde", prompt: "Je ___ la télé.", translation: "I'm watching TV.",
+    explanation: "Stem “regard-” + -e → je regarde. French present covers “I watch” and “I'm watching”." },
+  { verb: "regarder", subject: "Tu", answer: "regardes", prompt: "Tu ___ un film.", translation: "You're watching a movie.",
+    explanation: "Stem “regard-” + tu ending -es → tu regardes." },
+  { verb: "regarder", subject: "Elle", answer: "regarde", prompt: "Elle ___ par la fenêtre.", translation: "She's looking out the window.",
+    explanation: "elle ending -e → elle regarde. (regarder = to look AT, no “à” needed.)" },
+  { verb: "regarder", subject: "Nous", answer: "regardons", prompt: "Nous ___ le match.", translation: "We're watching the game.",
+    explanation: "nous ending -ons → nous regardons." },
+  { verb: "regarder", subject: "Ils", answer: "regardent", prompt: "Ils ___ les étoiles.", translation: "They're looking at the stars.",
+    explanation: "ils ending -ent → ils regardent. Silent ending — sounds like “regarde”." },
+
+  // ---------- ÉCOUTER : to listen (to) ----------
+  { verb: "écouter", subject: "Je (j')", answer: "écoute", prompt: "J'___ de la musique.", translation: "I'm listening to music.",
+    explanation: "Stem “écout-” + -e → j'écoute. (écouter = to listen TO, no “à” needed.)" },
+  { verb: "écouter", subject: "Tu", answer: "écoutes", prompt: "Tu ___ le professeur.", translation: "You listen to the teacher.",
+    explanation: "Stem “écout-” + tu ending -es → tu écoutes." },
+  { verb: "écouter", subject: "On", answer: "écoute", prompt: "On ___ la radio.", translation: "We listen to the radio.",
+    explanation: "“On” takes the il/elle form → ending -e → on écoute." },
+  { verb: "écouter", subject: "Vous", answer: "écoutez", prompt: "Vous ___ bien ?", translation: "Are you listening carefully?",
+    explanation: "vous ending -ez → vous écoutez." },
+  { verb: "écouter", subject: "Elles", answer: "écoutent", prompt: "Elles ___ une chanson.", translation: "They're listening to a song.",
+    explanation: "elles ending -ent → elles écoutent. The -ent is silent." },
+
+  // ---------- CHERCHER : to look for / to search ----------
+  { verb: "chercher", subject: "Je", answer: "cherche", prompt: "Je ___ mes clés.", translation: "I'm looking for my keys.",
+    explanation: "Stem “cherch-” + -e → je cherche. (chercher = to look FOR; “for” is already inside the verb.)" },
+  { verb: "chercher", subject: "Tu", answer: "cherches", prompt: "Tu ___ du travail ?", translation: "Are you looking for work?",
+    explanation: "Stem “cherch-” + tu ending -es → tu cherches." },
+  { verb: "chercher", subject: "Il", answer: "cherche", prompt: "Il ___ son chien.", translation: "He's looking for his dog.",
+    explanation: "il ending -e → il cherche." },
+  { verb: "chercher", subject: "Nous", answer: "cherchons", prompt: "Nous ___ un restaurant.", translation: "We're looking for a restaurant.",
+    explanation: "nous ending -ons → nous cherchons." },
+  { verb: "chercher", subject: "Ils", answer: "cherchent", prompt: "Ils ___ la sortie.", translation: "They're looking for the exit.",
+    explanation: "ils ending -ent → ils cherchent. Silent ending." },
+
+  // ---------- JOUER : to play ----------
+  { verb: "jouer", subject: "Je", answer: "joue", prompt: "Je ___ au tennis.", translation: "I play tennis.",
+    explanation: "Stem “jou-” + -e → je joue. “jouer à” for sports/games (au = à + le)." },
+  { verb: "jouer", subject: "Tu", answer: "joues", prompt: "Tu ___ du piano.", translation: "You play the piano.",
+    explanation: "Stem “jou-” + tu ending -es → tu joues. “jouer de” for instruments (du = de + le)." },
+  { verb: "jouer", subject: "On", answer: "joue", prompt: "On ___ dans le parc.", translation: "We play in the park.",
+    explanation: "“On” takes the il/elle form → ending -e → on joue." },
+  { verb: "jouer", subject: "Vous", answer: "jouez", prompt: "Vous ___ aux cartes ?", translation: "Do you play cards?",
+    explanation: "vous ending -ez → vous jouez. (aux = à + les.)" },
+  { verb: "jouer", subject: "Ils", answer: "jouent", prompt: "Les enfants ___ dehors.", translation: "The children are playing outside.",
+    explanation: "“Les enfants” is plural (ils) → ending -ent → jouent. Silent ending — sounds like “joue”." }
 ];

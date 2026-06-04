@@ -222,5 +222,43 @@ const GLOSSARY = {
   "partis": "left / gone (plural)",
   "voir": "to see",
   "gagne": "won (past participle)",
-  "arrives": "arrived (plural)"
+  "arrives": "arrived (plural)",
+
+  // ---- vocabulary for the regular -er verb examples ----
+  // determiners / connectors
+  "ses": "his / her (plural)",
+  "son": "his / her (masc.)",
+  "au": "at the / to the (masc.)",
+  "dans": "in / inside",
+  "par": "by / through",
+  "bien": "well / carefully",
+  "dehors": "outside",
+
+  // languages & nationalities
+  "espagnol": "Spanish",
+  "anglais": "English",
+
+  // nouns
+  "chocolat": "chocolate",
+  "musique": "music",
+  "football": "soccer / football",
+  "tele": "TV (la télé)",
+  "film": "movie / film",
+  "fenetre": "window",
+  "match": "game / match",
+  "etoiles": "stars",
+  "radio": "radio",
+  "chanson": "song",
+  "restaurant": "restaurant",
+  "sortie": "exit / way out",
+  "tennis": "tennis",
+  "piano": "piano",
+  "parc": "park",
+  "cartes": "cards",
+  "dimanche": "Sunday",
+  "vite": "fast / quickly",
+
+  // infinitives that appear filled in (after aimer)
+  "danser": "to dance",
+  "voyager": "to travel"
 };
