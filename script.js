@@ -9,8 +9,47 @@
   // the fly (see formsOf), so they don't need to be listed here.
   const FORMS = {
     "être": ["suis", "es", "est", "sommes", "êtes", "sont"],
-    "avoir": ["ai", "as", "a", "avons", "avez", "ont"]
+    "avoir": ["ai", "as", "a", "avons", "avez", "ont"],
+
+    // Non-verb "form families": the distractors for each blank are the OTHER
+    // forms in its family — the agreement contrasts a learner actually confuses.
+    // Possessives are split per possessor (my / your / his·her / …) so the
+    // distractors stay sharp (mon vs ma/mes, not mon vs leur).
+    "possessif-mon":   ["mon", "ma", "mes"],
+    "possessif-ton":   ["ton", "ta", "tes"],
+    "possessif-son":   ["son", "sa", "ses"],
+    "possessif-notre": ["notre", "nos"],
+    "possessif-votre": ["votre", "vos"],
+    "possessif-leur":  ["leur", "leurs"],
+    "demonstratif":    ["ce", "cet", "cette", "ces"],
+    "cest":            ["c'est", "ce sont", "il est", "ils sont"],
+    "question":        ["est-ce que", "qu'est-ce que", "qu'est-ce qui", "qui est-ce que"]
   };
+
+  // Which filter-group button each non-verb family belongs to. Verbs (être /
+  // avoir / -er) keep their own per-verb filters and aren't listed here.
+  const TOPIC_GROUP = {
+    "possessif-mon": "possessives", "possessif-ton": "possessives",
+    "possessif-son": "possessives", "possessif-notre": "possessives",
+    "possessif-votre": "possessives", "possessif-leur": "possessives",
+    "demonstratif": "demonstratives",
+    "cest": "cest",
+    "question": "questions"
+  };
+
+  // Friendly chip text for a family key (raw keys like "possessif-mon" are ugly).
+  // Verbs fall through to their own name (être / avoir / parler / …).
+  const FAMILY_LABEL = {
+    "possessif-mon": "possessive", "possessif-ton": "possessive",
+    "possessif-son": "possessive", "possessif-notre": "possessive",
+    "possessif-votre": "possessive", "possessif-leur": "possessive",
+    "demonstratif": "this/that",
+    "cest": "c'est / ce sont",
+    "question": "question"
+  };
+  function familyLabel(family) {
+    return FAMILY_LABEL[family] || family;
+  }
 
   // Endings for a regular -er verb, in the same order as the FORMS arrays
   // (je, tu, il, nous, vous, ils). je/tu/il/ils all sound identical.
@@ -64,10 +103,16 @@
   }
   function chipLabel(item) {
     const blanks = blanksOf(item);
-    if (blanks.length === 1) return blanks[0].verb;
+    if (blanks.length === 1) return familyLabel(blanks[0].verb);
     const verbs = verbsOf(item);
-    if (verbs.size === 1) return blanks[0].verb + " ×" + blanks.length;
-    return "être + avoir";
+    if (verbs.size === 1) return familyLabel(blanks[0].verb) + " ×" + blanks.length;
+    // Join the distinct families' friendly labels (e.g. "avoir + possessive").
+    const labels = [];
+    blanksOf(item).forEach(function (b) {
+      const l = familyLabel(b.verb);
+      if (labels.indexOf(l) === -1) labels.push(l);
+    });
+    return labels.join(" + ");
   }
 
   // ---- DOM refs ----
@@ -135,6 +180,15 @@
   // Glossary lookup key for a displayed word (also strips edge apostrophes).
   function wordKey(token) {
     return normalize(token).replace(/^'+|'+$/g, "");
+  }
+
+  // Looser key used ONLY for comparing a learner's answer to the correct one.
+  // Drops spaces, hyphens and apostrophes too, so typed multi-token answers
+  // match regardless of punctuation: "cest" / "c est" → "c'est",
+  // "est ce que" → "est-ce que". (Kept separate from normalize/wordKey, which
+  // the glossary relies on to keep apostrophes, e.g. "d'accord".)
+  function answerKey(str) {
+    return normalize(str).replace(/[\s'\-]/g, "");
   }
 
   function escapeHtml(s) {
@@ -220,6 +274,14 @@
     if (filter === "all") return true;
     if (filter === "-er") {
       return Array.from(verbsOf(item)).some(isErVerb);
+    }
+    // Topic-group filters (possessives / demonstratives / cest / questions)
+    // match any blank whose family maps to that group.
+    if (filter === "possessives" || filter === "demonstratives" ||
+        filter === "cest" || filter === "questions") {
+      return Array.from(verbsOf(item)).some(function (v) {
+        return TOPIC_GROUP[v] === filter;
+      });
     }
     return verbsOf(item).has(filter);
   }
@@ -376,7 +438,7 @@
     input.autocapitalize = "off";
     input.spellcheck = false;
     input.setAttribute("inputmode", "text");
-    input.placeholder = "type the verb…";
+    input.placeholder = "type the answer…";
 
     const submit = document.createElement("button");
     submit.className = "submit-btn";
@@ -464,7 +526,7 @@
           mark: function (correctRight) {
             Array.prototype.forEach.call(grid.children, function (b) {
               b.disabled = true;
-              if (normalize(b.textContent) === normalize(blank.answer)) {
+              if (answerKey(b.textContent) === answerKey(blank.answer)) {
                 b.classList.add("correct");
               } else if (b.classList.contains("selected") && !correctRight) {
                 b.classList.add("wrong");
@@ -540,7 +602,7 @@
     let allRight = true;
 
     controls.forEach(function (control, i) {
-      const right = normalize(control.getValue()) === normalize(blanks[i].answer);
+      const right = answerKey(control.getValue()) === answerKey(blanks[i].answer);
       state.attempts += 1;
       if (right) {
         state.score += 1;
@@ -608,7 +670,7 @@
   // ---------------------------------------------------------------- answering
   function handleAnswer(given, item, grid, target) {
     state.answered = true;
-    const isRight = normalize(given) === normalize(item.answer);
+    const isRight = answerKey(given) === answerKey(item.answer);
 
     state.attempts += 1;
     if (isRight) {
@@ -624,7 +686,7 @@
       // Multiple choice: disable all, mark correct + the wrong pick.
       Array.prototype.forEach.call(grid.children, function (btn) {
         btn.disabled = true;
-        if (normalize(btn.textContent) === normalize(item.answer)) {
+        if (answerKey(btn.textContent) === answerKey(item.answer)) {
           btn.classList.add("correct");
         } else if (btn === target && !isRight) {
           btn.classList.add("wrong");

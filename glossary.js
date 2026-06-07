@@ -260,5 +260,39 @@ const GLOSSARY = {
 
   // infinitives that appear filled in (after aimer)
   "danser": "to dance",
-  "voyager": "to travel"
+  "voyager": "to travel",
+
+  // ---- possessive & demonstrative adjectives ----
+  "ma": "my (fem.)",
+  "ton": "your (masc.)",
+  "ta": "your (fem.)",
+  "tes": "your (plural)",
+  "sa": "his / her (fem.)",
+  "notre": "our (singular)",
+  "nos": "our (plural)",
+  "votre": "your (singular, formal/plural)",
+  "vos": "your (plural)",
+  "leur": "their (singular)",
+  "leurs": "their (plural)",
+  "cet": "this (masc., before a vowel)",
+  "ces": "these / those",
+  "c'est": "it is / this is",
+  "voici": "here is / here are",
+
+  // ---- vocabulary for the possessive / demonstrative examples ----
+  "pere": "father",
+  "mere": "mother",
+  "frere": "brother",
+  "sœur": "sister",
+  "amie": "friend (fem.)",
+  "homme": "man",
+  "ecole": "school",
+  "histoire": "story / history",
+  "livre": "book",
+  "film": "movie / film",
+  "pommes": "apples",
+  "grand": "tall / big",
+  "marc": "Marc (a name)",
+  "lyon": "Lyon (a city)",
+  "marie": "Marie (a name)"
 };

@@ -1,8 +1,10 @@
-# Être & Avoir — French Practice
+# French Practice — Fill in the Blank
 
-A tiny, mobile-first browser game for practicing the **present tense** of the French verbs
-**être** and **avoir** by filling in the blanks. ~120 examples, each with an explanation of *why*
-that conjugation is correct. Pure HTML/CSS/JS — no build step, no dependencies, no server.
+A tiny, mobile-first browser game for practicing French beginner grammar by filling in the blanks.
+Covers the **present tense** of **être**, **avoir** and regular **-er** verbs, plus **possessive
+adjectives** (mon/ma/mes …), **demonstratives** (ce/cet/cette/ces), **c'est / ce sont**, and
+**questions** (est-ce que / qu'est-ce que). Every example comes with an explanation of *why* that
+answer is correct. Pure HTML/CSS/JS — no build step, no dependencies, no server.
 
 ## Run locally
 Just open `index.html` in a browser, or serve the folder:
@@ -47,11 +49,27 @@ Every future `git push` to `main` redeploys automatically.
 Append objects to `EXAMPLES` in `data.js`:
 ```js
 {
-  verb: "être",                 // "être" or "avoir"
+  verb: "être",                 // the "form family" — see below
   subject: "Je",                // for reference
-  answer: "suis",               // the correct present-tense form
+  answer: "suis",               // the correct answer that fills the blank
   prompt: "Je ___ étudiant.",   // blank marked with ___
   translation: "I am a student.",
   explanation: "Why this form is correct…"
+}
+```
+
+The `verb` field names a **form family** — the pool the multiple-choice distractors are drawn
+from (see `FORMS` in `script.js`). Use a verb (`être`, `avoir`, or any `-er` verb), or one of the
+grammar families: `possessif-mon` / `possessif-ton` / `possessif-son` / `possessif-notre` /
+`possessif-votre` / `possessif-leur`, `demonstratif`, `cest`, `question`. Each family is mapped to
+a filter button via `TOPIC_GROUP` and to a friendly chip label via `FAMILY_LABEL` in `script.js`.
+
+For a sentence with several blanks, use a `blanks` array instead of `answer` (families may differ):
+```js
+{
+  prompt: "Elle ___ ___ chien.",
+  translation: "She has her dog.",
+  blanks: [ { verb: "avoir", answer: "a" }, { verb: "possessif-son", answer: "son" } ],
+  explanation: "avoir → elle a; chien is masculine → son chien."
 }
 ```
