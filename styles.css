@@ -253,6 +253,12 @@ body {
   cursor: pointer;
   min-height: 56px;
   transition: transform 0.05s ease;
+  /* Grid items default to min-width:auto, so a long option (e.g. a negated
+     verb phrase) widens its column past the card on narrow screens. */
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 .choice:active { transform: scale(0.97); }
 .choice.selected { border-color: var(--brand); background: var(--brand-soft); color: var(--brand); }
